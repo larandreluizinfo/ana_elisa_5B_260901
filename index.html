@@ -3,10 +3,290 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ana Elisa 5B - 260901</title>
+  <title>Ana Elisa 5B - Jogo da Cobrinha</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      padding: 20px;
+    }
+    h1 { margin-bottom: 4px; text-shadow: 2px 2px 4px rgba(0,0,0,.4); }
+    p.sub { opacity: .9; margin-bottom: 12px; }
+    #placar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    #placar span {
+      background: rgba(0,0,0,.35);
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+    #jogo {
+      background: #111;
+      border: 4px solid #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.5);
+      max-width: 92vw;
+      touch-action: none;
+    }
+    #controles { margin-top: 14px; display: flex; gap: 10px; }
+    button {
+      background: #fff;
+      color: #1a2a6c;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform .1s;
+    }
+    button:hover { transform: scale(1.05); }
+    #msg {
+      margin-top: 12px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      min-height: 1.6em;
+      text-align: center;
+      text-shadow: 1px 1px 3px rgba(0,0,0,.5);
+    }
+    .dicas { margin-top: 8px; font-size: .9rem; opacity: .9; text-align: center; }
+    #pad { display: none; margin-top: 14px; grid-template-columns: repeat(3, 60px); gap: 6px; }
+    #pad button { padding: 14px 0; font-size: 1.3rem; }
+    @media (max-width: 600px) { #pad { display: grid; } }
+  </style>
 </head>
 <body>
-  <h1>Ana Elisa 5B - 260901</h1>
-  <p>Projeto em construção.</p>
+  <h1>🐍 Ana Elisa 5B — Jogo da Cobrinha</h1>
+  <p class="sub">Use as setas do teclado ou os botões para jogar!</p>
+
+  <div id="placar">
+    <span>Pontos: <b id="pontos">0</b></span>
+    <span>Recorde: <b id="recorde">0</b></span>
+  </div>
+
+  <canvas id="jogo" width="400" height="400"></canvas>
+
+  <div id="msg"></div>
+
+  <div id="controles">
+    <button id="btnIniciar">▶ Iniciar / Reiniciar</button>
+    <button id="btnPausar">⏸ Pausar</button>
+  </div>
+
+  <div id="pad">
+    <span></span><button data-dir="cima">⬆</button><span></span>
+    <button data-dir="esq">⬅</button><button data-dir="baixo">⬇</button><button data-dir="dir">➡</button>
+  </div>
+
+  <p class="dicas">Setas / WASD para mover • Espaço para pausar • Coma a maçã 🍎 para crescer!</p>
+
+  <script>
+    const canvas = document.getElementById('jogo');
+    const ctx = canvas.getContext('2d');
+    const elPontos = document.getElementById('pontos');
+    const elRecorde = document.getElementById('recorde');
+    const elMsg = document.getElementById('msg');
+
+    const TAM = 20; // tamanho de cada quadrado
+    const COLS = canvas.width / TAM; // 20
+    const ROWS = canvas.height / TAM;
+
+    let cobra, direcao, proximaDirecao, comida, pontos, recorde, rodando, pausado, loopId, velocidade;
+
+    recorde = Number(localStorage.getItem('anaelisa_recorde') || 0);
+    elRecorde.textContent = recorde;
+
+    function posAleatoria() {
+      return {
+        x: Math.floor(Math.random() * COLS),
+        y: Math.floor(Math.random() * ROWS)
+      };
+    }
+
+    function novaComida() {
+      do {
+        comida = posAleatoria();
+      } while (cobra.some(p => p.x === comida.x && p.y === comida.y));
+    }
+
+    function reiniciar() {
+      cobra = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+      direcao = { x: 1, y: 0 };
+      proximaDirecao = { x: 1, y: 0 };
+      pontos = 0;
+      velocidade = 130;
+      pausado = false;
+      rodando = true;
+      elPontos.textContent = '0';
+      elMsg.textContent = '';
+      novaComida();
+      clearInterval(loopId);
+      loopId = setInterval(passo, velocidade);
+      desenhar();
+    }
+
+    function passo() {
+      if (!rodando || pausado) return;
+      direcao = proximaDirecao;
+      const cabeca = { x: cobra[0].x + direcao.x, y: cobra[0].y + direcao.y };
+
+      // bateu na parede
+      if (cabeca.x < 0 || cabeca.y < 0 || cabeca.x >= COLS || cabeca.y >= ROWS) return fimDeJogo();
+      // bateu nela mesma
+      if (cobra.some(p => p.x === cabeca.x && p.y === cabeca.y)) return fimDeJogo();
+
+      cobra.unshift(cabeca);
+
+      // comeu
+      if (cabeca.x === comida.x && cabeca.y === comida.y) {
+        pontos += 10;
+        elPontos.textContent = pontos;
+        if (pontos > recorde) {
+          recorde = pontos;
+          elRecorde.textContent = recorde;
+          localStorage.setItem('anaelisa_recorde', recorde);
+        }
+        // acelera um pouco
+        if (velocidade > 60 && pontos % 50 === 0) {
+          velocidade -= 10;
+          clearInterval(loopId);
+          loopId = setInterval(passo, velocidade);
+        }
+        novaComida();
+      } else {
+        cobra.pop();
+      }
+      desenhar();
+    }
+
+    function desenhar() {
+      // fundo
+      ctx.fillStyle = '#111';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // grade leve
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      for (let i = 0; i <= COLS; i++) {
+        ctx.beginPath(); ctx.moveTo(i * TAM, 0); ctx.lineTo(i * TAM, canvas.height); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * TAM); ctx.lineTo(canvas.width, i * TAM); ctx.stroke();
+      }
+
+      // comida (maçã)
+      ctx.font = `${TAM}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🍎', comida.x * TAM + TAM / 2, comida.y * TAM + TAM / 2 + 1);
+
+      // cobra
+      cobra.forEach((p, i) => {
+        if (i === 0) {
+          ctx.fillStyle = '#4caf50';
+        } else {
+          ctx.fillStyle = i % 2 === 0 ? '#8bc34a' : '#7cb342';
+        }
+        ctx.beginPath();
+        ctx.roundRect(p.x * TAM + 1, p.y * TAM + 1, TAM - 2, TAM - 2, 6);
+        ctx.fill();
+        if (i === 0) {
+          // olhos
+          ctx.fillStyle = '#000';
+          const cx = p.x * TAM + TAM / 2, cy = p.y * TAM + TAM / 2;
+          ctx.beginPath(); ctx.arc(cx - 4, cy - 3, 2, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx + 4, cy - 3, 2, 0, Math.PI * 2); ctx.fill();
+        }
+      });
+
+      if (pausado) {
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 28px Arial';
+        ctx.fillText('PAUSADO', canvas.width / 2, canvas.height / 2);
+      }
+    }
+
+    function fimDeJogo() {
+      rodando = false;
+      clearInterval(loopId);
+      elMsg.textContent = `💀 Fim de jogo! Você fez ${pontos} pontos. Clique em Iniciar para jogar de novo!`;
+      desenhar();
+    }
+
+    function mudarDir(x, y) {
+      // impede inverter 180°
+      if (direcao.x === -x && direcao.y === -y) return;
+      // impede dupla troca no mesmo tick que causaria suicídio
+      if (proximaDirecao.x === -x && proximaDirecao.y === -y) return;
+      proximaDirecao = { x, y };
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      if (k === 'arrowup' || k === 'w') { e.preventDefault(); mudarDir(0, -1); }
+      else if (k === 'arrowdown' || k === 's') { e.preventDefault(); mudarDir(0, 1); }
+      else if (k === 'arrowleft' || k === 'a') { e.preventDefault(); mudarDir(-1, 0); }
+      else if (k === 'arrowright' || k === 'd') { e.preventDefault(); mudarDir(1, 0); }
+      else if (k === ' ') { e.preventDefault(); alternarPausa(); }
+      else if (k === 'enter') { reiniciar(); }
+    });
+
+    function alternarPausa() {
+      if (!rodando) return;
+      pausado = !pausado;
+      document.getElementById('btnPausar').textContent = pausado ? '▶ Continuar' : '⏸ Pausar';
+      desenhar();
+    }
+
+    document.getElementById('btnIniciar').addEventListener('click', reiniciar);
+    document.getElementById('btnPausar').addEventListener('click', alternarPausa);
+
+    document.querySelectorAll('#pad button').forEach(b => {
+      b.addEventListener('click', () => {
+        const d = b.dataset.dir;
+        if (d === 'cima') mudarDir(0, -1);
+        if (d === 'baixo') mudarDir(0, 1);
+        if (d === 'esq') mudarDir(-1, 0);
+        if (d === 'dir') mudarDir(1, 0);
+      });
+    });
+
+    // swipe no celular
+    let toqueX = null, toqueY = null;
+    canvas.addEventListener('touchstart', e => {
+      const t = e.touches[0];
+      toqueX = t.clientX; toqueY = t.clientY;
+    }, { passive: true });
+    canvas.addEventListener('touchmove', e => {
+      if (toqueX === null) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      const dx = t.clientX - toqueX, dy = t.clientY - toqueY;
+      if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+        if (Math.abs(dx) > Math.abs(dy)) mudarDir(dx > 0 ? 1 : -1, 0);
+        else mudarDir(0, dy > 0 ? 1 : -1);
+        toqueX = t.clientX; toqueY = t.clientY;
+      }
+    }, { passive: false });
+
+    // estado inicial (parado até clicar iniciar)
+    cobra = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+    direcao = { x: 1, y: 0 };
+    proximaDirecao = { x: 1, y: 0 };
+    comida = { x: 15, y: 10 };
+    pontos = 0; rodando = false; pausado = false;
+    desenhar();
+    elMsg.textContent = 'Clique em ▶ Iniciar para começar!';
+  </script>
 </body>
 </html>
