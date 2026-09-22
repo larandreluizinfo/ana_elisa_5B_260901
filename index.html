@@ -37,9 +37,11 @@
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0,0,0,.5);
       max-width: 92vw;
+      width: min(92vw, 400px);
+      height: auto;
       touch-action: none;
     }
-    #controles { margin-top: 14px; display: flex; gap: 10px; }
+    #controles { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
     button {
       background: #fff;
       color: #1a2a6c;
@@ -50,8 +52,16 @@
       font-weight: bold;
       cursor: pointer;
       transition: transform .1s;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      min-height: 44px;
     }
     button:hover { transform: scale(1.05); }
+    button:active { transform: scale(0.97); }
+    #dificuldade { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; font-weight: bold; }
+    #dificuldade button { opacity: .7; }
+    #dificuldade button.ativo { background: #ffeb3b; opacity: 1; box-shadow: 0 0 10px rgba(255,235,59,.7); }
     #msg {
       margin-top: 12px;
       font-size: 1.2rem;
@@ -61,9 +71,10 @@
       text-shadow: 1px 1px 3px rgba(0,0,0,.5);
     }
     .dicas { margin-top: 8px; font-size: .9rem; opacity: .9; text-align: center; }
-    #pad { display: none; margin-top: 14px; grid-template-columns: repeat(3, 60px); gap: 6px; }
-    #pad button { padding: 14px 0; font-size: 1.3rem; }
+    #pad { display: none; margin-top: 14px; grid-template-columns: repeat(3, 74px); gap: 8px; justify-content: center; touch-action: manipulation; }
+    #pad button { padding: 16px 0; font-size: 1.6rem; min-width: 74px; min-height: 64px; }
     @media (max-width: 600px) { #pad { display: grid; } }
+    @media (pointer: coarse) { #pad { display: grid; } }
   </style>
 </head>
 <body>
@@ -76,6 +87,13 @@
   </div>
 
   <canvas id="jogo" width="400" height="400"></canvas>
+
+  <div id="dificuldade" style="margin-top:12px;">
+    <span>Nível:</span>
+    <button data-nivel="facil">😊 Fácil</button>
+    <button data-nivel="medio" class="ativo">🙂 Médio</button>
+    <button data-nivel="dificil">😈 Difícil</button>
+  </div>
 
   <div id="msg"></div>
 
@@ -104,6 +122,10 @@
 
     let cobra, direcao, proximaDirecao, comida, pontos, recorde, rodando, pausado, loopId, velocidade;
 
+    // Dificuldade: controla velocidade inicial (menor = mais rápido)
+    const VELOCIDADES = { facil: 180, medio: 130, dificil: 85 };
+    let nivel = 'medio';
+
     recorde = Number(localStorage.getItem('anaelisa_recorde') || 0);
     elRecorde.textContent = recorde;
 
@@ -125,7 +147,7 @@
       direcao = { x: 1, y: 0 };
       proximaDirecao = { x: 1, y: 0 };
       pontos = 0;
-      velocidade = 130;
+      velocidade = VELOCIDADES[nivel] || 130;
       pausado = false;
       rodando = true;
       elPontos.textContent = '0';
@@ -158,7 +180,7 @@
           localStorage.setItem('anaelisa_recorde', recorde);
         }
         // acelera um pouco
-        if (velocidade > 60 && pontos % 50 === 0) {
+        if (velocidade > 50 && pontos % 50 === 0) {
           velocidade -= 10;
           clearInterval(loopId);
           loopId = setInterval(passo, velocidade);
@@ -251,14 +273,30 @@
     document.getElementById('btnIniciar').addEventListener('click', reiniciar);
     document.getElementById('btnPausar').addEventListener('click', alternarPausa);
 
-    document.querySelectorAll('#pad button').forEach(b => {
+    // Seletor de dificuldade
+    document.querySelectorAll('#dificuldade button').forEach(b => {
       b.addEventListener('click', () => {
-        const d = b.dataset.dir;
-        if (d === 'cima') mudarDir(0, -1);
-        if (d === 'baixo') mudarDir(0, 1);
-        if (d === 'esq') mudarDir(-1, 0);
-        if (d === 'dir') mudarDir(1, 0);
+        document.querySelectorAll('#dificuldade button').forEach(x => x.classList.remove('ativo'));
+        b.classList.add('ativo');
+        nivel = b.dataset.nivel;
+        // se já estiver jogando, aplica na hora reiniciando
+        if (rodando) reiniciar();
+        else elMsg.textContent = `Nível ${b.textContent.trim()} selecionado! Clique em ▶ Iniciar!`;
       });
+    });
+
+    function apertarPad(b) {
+      const d = b.dataset.dir;
+      if (d === 'cima') mudarDir(0, -1);
+      if (d === 'baixo') mudarDir(0, 1);
+      if (d === 'esq') mudarDir(-1, 0);
+      if (d === 'dir') mudarDir(1, 0);
+    }
+
+    document.querySelectorAll('#pad button').forEach(b => {
+      // click para mouse + touchstart para resposta instantânea no celular
+      b.addEventListener('click', () => apertarPad(b));
+      b.addEventListener('touchstart', (e) => { e.preventDefault(); apertarPad(b); }, { passive: false });
     });
 
     // swipe no celular
