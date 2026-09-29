@@ -36,8 +36,8 @@
       border: 4px solid #fff;
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0,0,0,.5);
-      max-width: 92vw;
-      width: min(92vw, 600px, 70vh);
+      max-width: 94vw;
+      width: min(94vw, 800px, 75vh);
       height: auto;
       touch-action: none;
     }
@@ -86,7 +86,7 @@
     <span>Recorde: <b id="recorde">0</b></span>
   </div>
 
-  <canvas id="jogo" width="600" height="600"></canvas>
+  <canvas id="jogo" width="800" height="800"></canvas>
 
   <div id="dificuldade" style="margin-top:12px;">
     <span>Nível:</span>
@@ -116,7 +116,7 @@
     const elRecorde = document.getElementById('recorde');
     const elMsg = document.getElementById('msg');
 
-    const TAM = 30; // tamanho de cada quadrado
+    const TAM = 40; // tamanho de cada quadrado
     const COLS = canvas.width / TAM; // 20
     const ROWS = canvas.height / TAM;
 
@@ -218,14 +218,14 @@
           ctx.fillStyle = i % 2 === 0 ? '#8bc34a' : '#7cb342';
         }
         ctx.beginPath();
-        ctx.roundRect(p.x * TAM + 1, p.y * TAM + 1, TAM - 2, TAM - 2, 8);
+        ctx.roundRect(p.x * TAM + 1, p.y * TAM + 1, TAM - 2, TAM - 2, 10);
         ctx.fill();
         if (i === 0) {
           // olhos
           ctx.fillStyle = '#000';
           const cx = p.x * TAM + TAM / 2, cy = p.y * TAM + TAM / 2;
-          ctx.beginPath(); ctx.arc(cx - 6, cy - 4, 3, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(cx + 6, cy - 4, 3, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx - 8, cy - 5, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx + 8, cy - 5, 4, 0, Math.PI * 2); ctx.fill();
         }
       });
 
