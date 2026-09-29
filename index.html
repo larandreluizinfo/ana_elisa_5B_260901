@@ -3,48 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ana Elisa 5B - Jogo da Cobrinha</title>
+  <title>Ana Elisa 5B - Jogo da Cobrinha Turbo</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e, #1a2a6c);
+      background-size: 300% 300%;
+      animation: fundoAnim 12s ease infinite;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       color: #fff;
-      padding: 20px;
+      padding: 16px;
     }
-    h1 { margin-bottom: 4px; text-shadow: 2px 2px 4px rgba(0,0,0,.4); }
-    p.sub { opacity: .9; margin-bottom: 12px; }
+    @keyframes fundoAnim { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    h1 { margin-bottom: 4px; text-shadow: 0 0 12px #00ff88, 2px 2px 4px rgba(0,0,0,.6); text-align:center; }
+    p.sub { opacity: .9; margin-bottom: 12px; text-align:center; }
     #placar {
       display: flex;
-      gap: 16px;
+      gap: 10px;
       margin-bottom: 12px;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: bold;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     #placar span {
-      background: rgba(0,0,0,.35);
+      background: rgba(0,0,0,.5);
       padding: 6px 14px;
       border-radius: 20px;
+      border: 1px solid rgba(0,255,136,.4);
+      box-shadow: 0 0 8px rgba(0,255,136,.25);
     }
+    #placar .destaque { border-color: #ffeb3b; box-shadow: 0 0 10px rgba(255,235,59,.5); }
     #jogo {
-      background: #111;
-      border: 4px solid #fff;
-      border-radius: 12px;
-      box-shadow: 0 8px 30px rgba(0,0,0,.5);
+      background: #0a0a14;
+      border: 4px solid #00ff88;
+      border-radius: 14px;
+      box-shadow: 0 0 25px rgba(0,255,136,.5), 0 8px 30px rgba(0,0,0,.6);
       max-width: 94vw;
-      width: min(94vw, 800px, 75vh);
+      width: min(94vw, 800px, 72vh);
       height: auto;
       touch-action: none;
     }
-    #controles { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    #controles, #opcoes { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
     button {
-      background: #fff;
-      color: #1a2a6c;
+      background: linear-gradient(180deg,#fff,#d9ffe9);
+      color: #0a3d24;
       border: none;
       border-radius: 10px;
       padding: 10px 18px;
@@ -56,39 +64,55 @@
       user-select: none;
       -webkit-user-select: none;
       min-height: 44px;
+      box-shadow: 0 4px 0 rgba(0,0,0,.3);
     }
     button:hover { transform: scale(1.05); }
-    button:active { transform: scale(0.97); }
-    #dificuldade { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; font-weight: bold; }
-    #dificuldade button { opacity: .7; }
-    #dificuldade button.ativo { background: #ffeb3b; opacity: 1; box-shadow: 0 0 10px rgba(255,235,59,.7); }
+    button:active { transform: translateY(2px); box-shadow: none; }
+    button.sec { background: rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.4); box-shadow:none; }
+    button.sec.ligado { background:#00ff88; color:#063; border-color:#00ff88; box-shadow:0 0 12px rgba(0,255,136,.7); }
+    #dificuldade { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; margin-top:12px; flex-wrap: wrap; justify-content: center; font-weight: bold; }
+    #dificuldade button { opacity: .65; }
+    #dificuldade button.ativo { background: #ffeb3b; opacity: 1; box-shadow: 0 0 12px rgba(255,235,59,.8); }
     #msg {
-      margin-top: 12px;
-      font-size: 1.2rem;
+      margin-top: 10px;
+      font-size: 1.15rem;
       font-weight: bold;
       min-height: 1.6em;
       text-align: center;
-      text-shadow: 1px 1px 3px rgba(0,0,0,.5);
+      text-shadow: 1px 1px 3px rgba(0,0,0,.6);
+      max-width: 90vw;
     }
-    .dicas { margin-top: 8px; font-size: .9rem; opacity: .9; text-align: center; }
+    .dicas { margin-top: 8px; font-size: .9rem; opacity: .9; text-align: center; max-width: 640px; line-height:1.5; }
     #pad { display: none; margin-top: 14px; grid-template-columns: repeat(3, 74px); gap: 8px; justify-content: center; touch-action: manipulation; }
     #pad button { padding: 16px 0; font-size: 1.6rem; min-width: 74px; min-height: 64px; }
-    @media (max-width: 600px) { #pad { display: grid; } }
+    @media (max-width: 600px) { #pad { display: grid; } h1{font-size:1.3rem} }
     @media (pointer: coarse) { #pad { display: grid; } }
+    #gameover {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.75);
+      align-items:center; justify-content:center; z-index:10; padding:20px;
+    }
+    #gameover.show{ display:flex; }
+    .card{ background:#151524; border:2px solid #00ff88; border-radius:16px; padding:28px; text-align:center; box-shadow:0 0 30px rgba(0,255,136,.5); max-width:420px; width:100%; }
+    .card h2{ font-size:2rem; margin-bottom:8px; }
+    .card p{ margin:6px 0; font-size:1.1rem; }
+    .card .novo-recorde{ color:#ffeb3b; font-weight:bold; font-size:1.3rem; animation: pisca 1s infinite; }
+    @keyframes pisca{ 50%{opacity:.5} }
+    .card button{ margin-top:14px; font-size:1.1rem; width:100%; }
   </style>
 </head>
 <body>
-  <h1>🐍 Ana Elisa 5B — Jogo da Cobrinha</h1>
-  <p class="sub">Use as setas do teclado ou os botões para jogar!</p>
+  <h1>🐍 Ana Elisa 5B — Cobrinha Turbo</h1>
+  <p class="sub">Coma 🍎, desvie dos 🧱, pegue a ⭐ dourada valendo 50!</p>
 
   <div id="placar">
     <span>Pontos: <b id="pontos">0</b></span>
     <span>Recorde: <b id="recorde">0</b></span>
+    <span class="destaque">Fase: <b id="fase">1</b></span>
   </div>
 
   <canvas id="jogo" width="800" height="800"></canvas>
 
-  <div id="dificuldade" style="margin-top:12px;">
+  <div id="dificuldade">
     <span>Nível:</span>
     <button data-nivel="facil">😊 Fácil</button>
     <button data-nivel="medio" class="ativo">🙂 Médio</button>
@@ -101,154 +125,325 @@
     <button id="btnIniciar">▶ Iniciar / Reiniciar</button>
     <button id="btnPausar">⏸ Pausar</button>
   </div>
+  <div id="opcoes">
+    <button id="btnSom" class="sec ligado">🔊 Som: ON</button>
+    <button id="btnAtravessar" class="sec">🌀 Atravessar parede: OFF</button>
+  </div>
 
   <div id="pad">
     <span></span><button data-dir="cima">⬆</button><span></span>
     <button data-dir="esq">⬅</button><button data-dir="baixo">⬇</button><button data-dir="dir">➡</button>
   </div>
 
-  <p class="dicas">Setas / WASD para mover • Espaço para pausar • Coma a maçã 🍎 para crescer!</p>
+  <p class="dicas">Setas / WASD para mover • Espaço pausa • Enter reinicia • M liga/desliga som<br>A cada 100 pontos você sobe de fase e surgem obstáculos 🧱!</p>
+
+  <div id="gameover">
+    <div class="card">
+      <h2>💀 Fim de jogo!</h2>
+      <p>Você fez <b id="finalPontos">0</b> pontos</p>
+      <p>Chegou até a fase <b id="finalFase">1</b></p>
+      <p id="novoRecordeMsg" class="novo-recorde" style="display:none">🏆 NOVO RECORDE! 🏆</p>
+      <button id="btnJogarDeNovo">🔄 Jogar de novo</button>
+    </div>
+  </div>
 
   <script>
     const canvas = document.getElementById('jogo');
     const ctx = canvas.getContext('2d');
     const elPontos = document.getElementById('pontos');
     const elRecorde = document.getElementById('recorde');
+    const elFase = document.getElementById('fase');
     const elMsg = document.getElementById('msg');
 
-    const TAM = 40; // tamanho de cada quadrado
-    const COLS = canvas.width / TAM; // 20
+    const TAM = 40;
+    const COLS = canvas.width / TAM;
     const ROWS = canvas.height / TAM;
 
-    let cobra, direcao, proximaDirecao, comida, pontos, recorde, rodando, pausado, loopId, velocidade;
+    let cobra, direcao, proximaDirecao, comida, comidaEspecial, obstaculos, particulas;
+    let pontos, recorde, rodando, pausado, loopId, animId, velocidade, fase;
+    let atravessar = false;
+    let somLigado = localStorage.getItem('anaelisa_som') !== 'off';
 
-    // Dificuldade: controla velocidade inicial (menor = mais rápido)
     const VELOCIDADES = { facil: 180, medio: 130, dificil: 85 };
     let nivel = 'medio';
 
     recorde = Number(localStorage.getItem('anaelisa_recorde') || 0);
     elRecorde.textContent = recorde;
 
-    function posAleatoria() {
-      return {
-        x: Math.floor(Math.random() * COLS),
-        y: Math.floor(Math.random() * ROWS)
-      };
+    // ===== SONS (WebAudio, sem arquivos) =====
+    let audioCtx = null;
+    function ctxAudio(){
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
     }
+    function beep(freq, dur=0.12, tipo='square', vol=0.12, quando=0){
+      if(!somLigado) return;
+      try{
+        const ac = ctxAudio();
+        const o = ac.createOscillator();
+        const g = ac.createGain();
+        o.type = tipo; o.frequency.value = freq;
+        g.gain.setValueAtTime(vol, ac.currentTime + quando);
+        g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + quando + dur);
+        o.connect(g); g.connect(ac.destination);
+        o.start(ac.currentTime + quando); o.stop(ac.currentTime + quando + dur);
+      }catch(e){}
+    }
+    const somComer = () => { beep(600,0.08,'square'); beep(900,0.1,'square',0.12,0.07); };
+    const somEspecial = () => { beep(700,0.09,'sine'); beep(900,0.09,'sine',0.14,0.08); beep(1200,0.15,'sine',0.14,0.16); };
+    const somMorte = () => { beep(400,0.15,'sawtooth'); beep(300,0.15,'sawtooth',0.12,0.12); beep(180,0.3,'sawtooth',0.12,0.24); };
+    const somRecorde = () => { [523,659,784,1046].forEach((f,i)=>beep(f,0.15,'triangle',0.14,i*0.1)); };
+    const somClick = () => beep(500,0.06,'square',0.08);
+    const somFase = () => { beep(800,0.1,'triangle'); beep(1100,0.15,'triangle',0.13,0.09); };
 
-    function novaComida() {
-      do {
-        comida = posAleatoria();
-      } while (cobra.some(p => p.x === comida.x && p.y === comida.y));
+    function atualizarBtnSom(){
+      const b = document.getElementById('btnSom');
+      b.textContent = somLigado ? '🔊 Som: ON' : '🔇 Som: OFF';
+      b.classList.toggle('ligado', somLigado);
     }
+    atualizarBtnSom();
+
+    // ===== JOGO =====
+    function posAleatoria() {
+      return { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+    }
+    function posOcupada(p){
+      return cobra.some(s => s.x===p.x && s.y===p.y)
+        || obstaculos.some(o => o.x===p.x && o.y===p.y)
+        || (comida && comida.x===p.x && comida.y===p.y);
+    }
+    function novaComida() {
+      let tent=0;
+      do { comida = posAleatoria(); tent++; } while (posOcupada(comida) && tent<500);
+    }
+    function gerarObstaculos(qtd){
+      obstaculos = [];
+      let tent=0;
+      while(obstaculos.length<qtd && tent<1000){
+        tent++;
+        const p = posAleatoria();
+        // longe do início
+        if(Math.abs(p.x-10)<4 && Math.abs(p.y-10)<4) continue;
+        if(posOcupada(p)) continue;
+        obstaculos.push(p);
+      }
+    }
+    function faseAtual(){ return Math.floor(pontos/100)+1; }
+
+    function spawnEspecial(){
+      if(!rodando || pausado || comidaEspecial) return;
+      if(Math.random()<0.6){
+        let tent=0, p;
+        do{ p = posAleatoria(); tent++; }while(posOcupada(p) && tent<300);
+        if(tent<300){
+          comidaEspecial = {...p, expira: Date.now()+6000};
+          elMsg.textContent = '⭐ Comida dourada apareceu! Vale 50 pontos!';
+          setTimeout(()=>{ if(comidaEspecial && Date.now()>=comidaEspecial.expira){ comidaEspecial=null; } }, 6100);
+        }
+      }
+    }
+    setInterval(spawnEspecial, 9000);
 
     function reiniciar() {
+      somClick();
       cobra = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
       direcao = { x: 1, y: 0 };
       proximaDirecao = { x: 1, y: 0 };
-      pontos = 0;
+      pontos = 0; fase = 1;
+      obstaculos = []; particulas = []; comidaEspecial = null;
       velocidade = VELOCIDADES[nivel] || 130;
-      pausado = false;
-      rodando = true;
-      elPontos.textContent = '0';
+      pausado = false; rodando = true;
+      elPontos.textContent = '0'; elFase.textContent = '1';
       elMsg.textContent = '';
+      document.getElementById('gameover').classList.remove('show');
+      document.getElementById('btnPausar').textContent = '⏸ Pausar';
       novaComida();
-      clearInterval(loopId);
+      clearInterval(loopId); cancelAnimationFrame(animId);
       loopId = setInterval(passo, velocidade);
+      animar();
       desenhar();
+    }
+
+    function explodir(x,y,cor,n=12){
+      for(let i=0;i<n;i++){
+        particulas.push({ x: x*TAM+TAM/2, y: y*TAM+TAM/2,
+          vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10,
+          vida:1, cor });
+      }
     }
 
     function passo() {
       if (!rodando || pausado) return;
       direcao = proximaDirecao;
-      const cabeca = { x: cobra[0].x + direcao.x, y: cobra[0].y + direcao.y };
+      let cabeca = { x: cobra[0].x + direcao.x, y: cobra[0].y + direcao.y };
 
-      // bateu na parede
-      if (cabeca.x < 0 || cabeca.y < 0 || cabeca.x >= COLS || cabeca.y >= ROWS) return fimDeJogo();
-      // bateu nela mesma
+      if(atravessar){
+        cabeca.x = (cabeca.x + COLS) % COLS;
+        cabeca.y = (cabeca.y + ROWS) % ROWS;
+      } else {
+        if (cabeca.x < 0 || cabeca.y < 0 || cabeca.x >= COLS || cabeca.y >= ROWS) return fimDeJogo();
+      }
       if (cobra.some(p => p.x === cabeca.x && p.y === cabeca.y)) return fimDeJogo();
+      if (obstaculos.some(o => o.x === cabeca.x && o.y === cabeca.y)) return fimDeJogo();
 
       cobra.unshift(cabeca);
+      let comeu = false;
 
-      // comeu
       if (cabeca.x === comida.x && cabeca.y === comida.y) {
-        pontos += 10;
-        elPontos.textContent = pontos;
-        if (pontos > recorde) {
-          recorde = pontos;
-          elRecorde.textContent = recorde;
-          localStorage.setItem('anaelisa_recorde', recorde);
-        }
-        // acelera um pouco
-        if (velocidade > 50 && pontos % 50 === 0) {
-          velocidade -= 10;
+        pontos += 10; comeu = true;
+        somComer(); explodir(cabeca.x, cabeca.y, '#ff5252');
+        novaComida();
+      }
+      if (comidaEspecial && cabeca.x === comidaEspecial.x && cabeca.y === comidaEspecial.y) {
+        pontos += 50; comeu = true;
+        somEspecial(); explodir(cabeca.x, cabeca.y, '#ffeb3b', 20);
+        comidaEspecial = null;
+        elMsg.textContent = '⭐ +50! Mandou bem!';
+      }
+      if(!comeu) cobra.pop();
+
+      elPontos.textContent = pontos;
+      const novaFase = faseAtual();
+      if(novaFase !== fase){
+        fase = novaFase;
+        elFase.textContent = fase;
+        somFase();
+        gerarObstaculos(Math.min((fase-1)*3, 18));
+        elMsg.textContent = `🚀 Fase ${fase}! Cuidado com os obstáculos 🧱!`;
+        if(velocidade > 55){
+          velocidade -= 12;
           clearInterval(loopId);
           loopId = setInterval(passo, velocidade);
         }
-        novaComida();
-      } else {
-        cobra.pop();
       }
+      if (pontos > recorde) {
+        recorde = pontos;
+        elRecorde.textContent = recorde;
+        localStorage.setItem('anaelisa_recorde', recorde);
+      }
+      // expirou especial?
+      if(comidaEspecial && Date.now() > comidaEspecial.expira) comidaEspecial = null;
       desenhar();
     }
 
+    function animar(){
+      if(!rodando) return;
+      desenhar();
+      animId = requestAnimationFrame(()=>setTimeout(animar, 120));
+    }
+
     function desenhar() {
-      // fundo
-      ctx.fillStyle = '#111';
+      const tempo = Date.now()/400;
+      ctx.fillStyle = '#0a0a14';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // grade leve
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.strokeStyle = 'rgba(0,255,136,0.07)';
+      ctx.lineWidth = 1;
       for (let i = 0; i <= COLS; i++) {
         ctx.beginPath(); ctx.moveTo(i * TAM, 0); ctx.lineTo(i * TAM, canvas.height); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, i * TAM); ctx.lineTo(canvas.width, i * TAM); ctx.stroke();
       }
 
-      // comida (maçã)
-      ctx.font = `${TAM}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('🍎', comida.x * TAM + TAM / 2, comida.y * TAM + TAM / 2 + 1);
+      // obstáculos
+      obstaculos.forEach(o=>{
+        ctx.font = `${TAM*0.85}px serif`;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('🧱', o.x*TAM+TAM/2, o.y*TAM+TAM/2+2);
+      });
 
-      // cobra
+      // comida normal com pulso
+      const pulso = 1 + Math.sin(tempo*2)*0.12;
+      ctx.save();
+      ctx.translate(comida.x*TAM+TAM/2, comida.y*TAM+TAM/2);
+      ctx.scale(pulso, pulso);
+      ctx.font = `${TAM*0.85}px serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('🍎', 0, 2);
+      ctx.restore();
+
+      // especial
+      if(comidaEspecial){
+        const restante = (comidaEspecial.expira - Date.now())/1000;
+        const pisca = Math.sin(Date.now()/150)>0 ? 1 : 0.6;
+        ctx.save();
+        ctx.globalAlpha = pisca;
+        ctx.shadowColor = '#ffeb3b'; ctx.shadowBlur = 25;
+        ctx.font = `${TAM}px serif`;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('⭐', comidaEspecial.x*TAM+TAM/2, comidaEspecial.y*TAM+TAM/2+2);
+        ctx.restore();
+        // barra de tempo
+        ctx.fillStyle = '#ffeb3b';
+        ctx.fillRect(comidaEspecial.x*TAM+4, comidaEspecial.y*TAM+TAM-6, (TAM-8)*(restante/6), 4);
+      }
+
+      // partículas
+      particulas = particulas.filter(p=>p.vida>0);
+      particulas.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.vida-=0.05;
+        ctx.globalAlpha = Math.max(p.vida,0);
+        ctx.fillStyle = p.cor;
+        ctx.beginPath(); ctx.arc(p.x,p.y,5*p.vida+1,0,Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+
+      // cobra neon
       cobra.forEach((p, i) => {
-        if (i === 0) {
-          ctx.fillStyle = '#4caf50';
-        } else {
-          ctx.fillStyle = i % 2 === 0 ? '#8bc34a' : '#7cb342';
-        }
+        ctx.save();
+        ctx.shadowColor = i===0 ? '#00ff88' : '#8bc34a';
+        ctx.shadowBlur = i===0 ? 18 : 8;
+        ctx.fillStyle = i===0 ? '#00e676' : (i%2===0 ? '#8bc34a' : '#7cb342');
         ctx.beginPath();
-        ctx.roundRect(p.x * TAM + 1, p.y * TAM + 1, TAM - 2, TAM - 2, 10);
+        if(ctx.roundRect) ctx.roundRect(p.x*TAM+2, p.y*TAM+2, TAM-4, TAM-4, 10);
+        else ctx.rect(p.x*TAM+2, p.y*TAM+2, TAM-4, TAM-4);
         ctx.fill();
+        ctx.restore();
         if (i === 0) {
-          // olhos
+          const cx = p.x*TAM+TAM/2, cy = p.y*TAM+TAM/2;
+          ctx.fillStyle = '#fff';
+          ctx.beginPath(); ctx.arc(cx-8, cy-5, 6, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx+8, cy-5, 6, 0, Math.PI*2); ctx.fill();
           ctx.fillStyle = '#000';
-          const cx = p.x * TAM + TAM / 2, cy = p.y * TAM + TAM / 2;
-          ctx.beginPath(); ctx.arc(cx - 8, cy - 5, 4, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(cx + 8, cy - 5, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx-8, cy-5, 3, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx+8, cy-5, 3, 0, Math.PI*2); ctx.fill();
+          // linguinha
+          ctx.strokeStyle = '#ff1744'; ctx.lineWidth = 3;
+          ctx.beginPath();
+          const lx = cx + direcao.x* TAM/2, ly = cy + direcao.y*TAM/2;
+          ctx.moveTo(lx, ly); ctx.lineTo(lx + direcao.x*10, ly + direcao.y*10);
+          ctx.stroke();
         }
       });
 
       if (pausado) {
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillStyle = 'rgba(0,0,0,0.65)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#fff';
-        ctx.font = 'bold 28px Arial';
-        ctx.fillText('PAUSADO', canvas.width / 2, canvas.height / 2);
+        ctx.shadowColor='#00ff88'; ctx.shadowBlur=20;
+        ctx.font = 'bold 56px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('PAUSADO', canvas.width/2, canvas.height/2);
+        ctx.shadowBlur=0;
       }
     }
 
     function fimDeJogo() {
       rodando = false;
-      clearInterval(loopId);
-      elMsg.textContent = `💀 Fim de jogo! Você fez ${pontos} pontos. Clique em Iniciar para jogar de novo!`;
+      clearInterval(loopId); cancelAnimationFrame(animId);
+      somMorte();
+      const bateuRecorde = pontos >= recorde && pontos > 0;
+      if(bateuRecorde) setTimeout(somRecorde, 400);
+      if(navigator.vibrate) navigator.vibrate(200);
+      document.getElementById('finalPontos').textContent = pontos;
+      document.getElementById('finalFase').textContent = fase;
+      document.getElementById('novoRecordeMsg').style.display = bateuRecorde ? 'block' : 'none';
+      document.getElementById('gameover').classList.add('show');
+      elMsg.textContent = '';
       desenhar();
     }
 
     function mudarDir(x, y) {
-      // impede inverter 180°
       if (direcao.x === -x && direcao.y === -y) return;
-      // impede dupla troca no mesmo tick que causaria suicídio
       if (proximaDirecao.x === -x && proximaDirecao.y === -y) return;
       proximaDirecao = { x, y };
     }
@@ -261,25 +456,40 @@
       else if (k === 'arrowright' || k === 'd') { e.preventDefault(); mudarDir(1, 0); }
       else if (k === ' ') { e.preventDefault(); alternarPausa(); }
       else if (k === 'enter') { reiniciar(); }
+      else if (k === 'm') { toggleSom(); }
     });
 
     function alternarPausa() {
       if (!rodando) return;
+      somClick();
       pausado = !pausado;
       document.getElementById('btnPausar').textContent = pausado ? '▶ Continuar' : '⏸ Pausar';
-      desenhar();
+      if(!pausado) animar(); else desenhar();
+    }
+    function toggleSom(){
+      somLigado = !somLigado;
+      localStorage.setItem('anaelisa_som', somLigado ? 'on' : 'off');
+      atualizarBtnSom();
+      if(somLigado) somClick();
     }
 
     document.getElementById('btnIniciar').addEventListener('click', reiniciar);
     document.getElementById('btnPausar').addEventListener('click', alternarPausa);
+    document.getElementById('btnJogarDeNovo').addEventListener('click', reiniciar);
+    document.getElementById('btnSom').addEventListener('click', toggleSom);
+    document.getElementById('btnAtravessar').addEventListener('click', (e)=>{
+      atravessar = !atravessar;
+      e.target.textContent = atravessar ? '🌀 Atravessar parede: ON' : '🌀 Atravessar parede: OFF';
+      e.target.classList.toggle('ligado', atravessar);
+      somClick();
+    });
 
-    // Seletor de dificuldade
     document.querySelectorAll('#dificuldade button').forEach(b => {
       b.addEventListener('click', () => {
         document.querySelectorAll('#dificuldade button').forEach(x => x.classList.remove('ativo'));
         b.classList.add('ativo');
         nivel = b.dataset.nivel;
-        // se já estiver jogando, aplica na hora reiniciando
+        somClick();
         if (rodando) reiniciar();
         else elMsg.textContent = `Nível ${b.textContent.trim()} selecionado! Clique em ▶ Iniciar!`;
       });
@@ -292,14 +502,11 @@
       if (d === 'esq') mudarDir(-1, 0);
       if (d === 'dir') mudarDir(1, 0);
     }
-
     document.querySelectorAll('#pad button').forEach(b => {
-      // click para mouse + touchstart para resposta instantânea no celular
       b.addEventListener('click', () => apertarPad(b));
       b.addEventListener('touchstart', (e) => { e.preventDefault(); apertarPad(b); }, { passive: false });
     });
 
-    // swipe no celular
     let toqueX = null, toqueY = null;
     canvas.addEventListener('touchstart', e => {
       const t = e.touches[0];
@@ -317,12 +524,13 @@
       }
     }, { passive: false });
 
-    // estado inicial (parado até clicar iniciar)
+    // estado inicial
     cobra = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
     direcao = { x: 1, y: 0 };
     proximaDirecao = { x: 1, y: 0 };
     comida = { x: 15, y: 10 };
-    pontos = 0; rodando = false; pausado = false;
+    obstaculos = []; particulas = []; comidaEspecial = null;
+    pontos = 0; fase = 1; rodando = false; pausado = false;
     desenhar();
     elMsg.textContent = 'Clique em ▶ Iniciar para começar!';
   </script>
